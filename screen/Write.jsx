@@ -1,7 +1,8 @@
 import styled from "styled-components/native";
 import colors from "../colors";
-import { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Alert } from "react-native";
+import { useDB } from "../context";
 
 const View = styled.View`
   background-color: ${colors.bgColor};
@@ -53,7 +54,12 @@ const EmotionText = styled.Text`
 `;
 
 const emotions = ["🤯", "🥲", "🤬", "🤗", "🥰", "😊", "🤩"];
-const Write = () => {
+
+const Write = ({ navigation: { goBack } }) => {
+  const realm = useDB();
+  useEffect(() => {
+    console.log(realm);
+  });
   const [selectedEmotion, setEmotion] = useState(null);
   const [feelings, setFeelings] = useState("");
   const onChangeText = (text) => setFeelings(text);
@@ -62,6 +68,14 @@ const Write = () => {
     if (feelings === "" || selectedEmotion == null) {
       return Alert.alert("Please complete form.");
     }
+    realm.write(() => {
+      const feeling = realm.create("Feeling", {
+        _id: Date.now(),
+        emotion: selectedEmotion,
+        message: feelings,
+      });
+    });
+    goBack();
   };
 
   return (
